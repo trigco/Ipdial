@@ -102,11 +102,16 @@ object SipEngine {
             try {
                 if (!isLibraryLoaded) {
                     try {
+                        try {
+                            System.loadLibrary("c++_shared")
+                        } catch (t: Throwable) {
+                            log("#$callId: Failed to load c++_shared: ${t.message}", true)
+                        }
                         System.loadLibrary("pjsua2")
                         isLibraryLoaded = true
                         log("#$callId: Native library pjsua2 loaded")
-                    } catch (e: Throwable) {
-                        log("#$callId: Failed to load pjsua2: ${e.message}", true)
+                    } catch (t: Throwable) {
+                        log("#$callId: Failed to load pjsua2: ${t.message}", true)
                     }
                 }
 

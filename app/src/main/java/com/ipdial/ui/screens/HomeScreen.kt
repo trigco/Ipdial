@@ -403,15 +403,15 @@ fun CallLogRow(
     val timeStr   = formatTime(entry.timestampMs)
     val isGlass = com.ipdial.ui.theme.LocalGlassMode.current != com.ipdial.ui.theme.GlassMode.None
 
-    // Modern Floating Card Style for Call Logs
+    // Premium Floating Card Style for Call Logs
     Surface(
         color = if (isGlass) Color.Transparent else MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(16.dp),
-        shadowElevation = if (isGlass) 0.dp else 2.dp,
+        shape = RoundedCornerShape(24.dp),
+        shadowElevation = if (isGlass) 0.dp else 4.dp,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp)
-            .then(if (isGlass) Modifier.glass(RoundedCornerShape(16.dp)) else Modifier)
+            .then(if (isGlass) Modifier.glass(RoundedCornerShape(24.dp)) else Modifier)
     ) {
         Row(
             modifier = Modifier
@@ -420,12 +420,12 @@ fun CallLogRow(
                     onClick = onClick,
                     onLongClick = { expanded = true }
                 )
-                .padding(horizontal = 12.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(52.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.secondaryContainer),
                 contentAlignment = Alignment.Center
@@ -440,20 +440,19 @@ fun CallLogRow(
                 } else {
                     Text(
                         text = (callerName.firstOrNull() ?: '?').uppercaseCharCompat(),
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 }
             }
 
-            Spacer(Modifier.width(14.dp))
+            Spacer(Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = displayNameWithCount,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = if (entry.missed)
                         MaterialTheme.colorScheme.error
                     else
@@ -477,18 +476,24 @@ fun CallLogRow(
                             entry.missed -> MaterialTheme.colorScheme.error
                             else         -> MaterialTheme.colorScheme.onSurfaceVariant
                         },
-                        modifier = Modifier.size(14.dp)
+                        modifier = Modifier.size(16.dp)
                     )
                     val durationSuffix = if (entry.missed) "" else " • ${formatDuration(entry.durationSeconds)}"
                     Text(
                         text = "$viaLabel • $timeStr$durationSuffix",
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
 
-            IconButton(onClick = onCall) {
+            IconButton(
+                onClick = onCall,
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+            ) {
                 Icon(
                     imageVector = Icons.Default.Call,
                     contentDescription = "Call back",

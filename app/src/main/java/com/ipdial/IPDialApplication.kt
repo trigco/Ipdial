@@ -13,9 +13,14 @@ class IPDialApplication : Application() {
         
         // Load PJSIP library on Main thread to ensure proper registration
         try {
+            System.loadLibrary("c++_shared")
+        } catch (t: Throwable) {
+            android.util.Log.e("IPDialApp", "Failed to load c++_shared, might be normal", t)
+        }
+        try {
             System.loadLibrary("pjsua2")
-        } catch (e: Exception) {
-            android.util.Log.e("IPDialApp", "Failed to load pjsua2", e)
+        } catch (t: Throwable) {
+            android.util.Log.e("IPDialApp", "Failed to load pjsua2", t)
         }
 
         // Register phone account for Telecom integration

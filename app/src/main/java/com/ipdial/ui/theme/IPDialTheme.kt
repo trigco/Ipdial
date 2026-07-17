@@ -13,55 +13,61 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ipdial.data.model.ThemeMode
 
-// Google Dialer Inspired Palette
-val GoogleBlue = Color(0xFF1A73E8)
-val GoogleBlueDark = Color(0xFF8AB4F8)
-val GoogleRed = Color(0xFFEA4335)
-val GoogleGreen = Color(0xFF34A853)
+// Premium Modern Dialer Palette
+val BrandBlue = Color(0xFF0066FF)
+val BrandBlueDark = Color(0xFF4A90E2)
+val AccentRed = Color(0xFFFF3B30)
+val AccentGreen = Color(0xFF34C759)
 
-val DarkBg = Color(0xFF000000) // Pure Black
-val DarkSurface = Color(0xFF121212)
-val DarkSurfaceVariant = Color(0xFF1E1E1E)
+// Dark Theme Colors
+val DarkBg = Color(0xFF0A0A0C)
+val DarkSurface = Color(0xFF141417)
+val DarkSurfaceVariant = Color(0xFF1E1E22)
 
-val LightBg = Color(0xFFFFFFFF) // Pure White
-val LightSurface = Color(0xFFF8F9FA)
-val LightSurfaceVariant = Color(0xFFF1F3F4)
+// Light Theme Colors
+val LightBg = Color(0xFFF2F2F7)
+val LightSurface = Color(0xFFFFFFFF)
+val LightSurfaceVariant = Color(0xFFE5E5EA)
 
-val EndRed = GoogleRed
-val ForestGreen = GoogleGreen
+val EndRed = AccentRed
+val ForestGreen = AccentGreen
 
 fun Modifier.glass(
-    shape: Shape = RoundedCornerShape(16.dp),
+    shape: Shape = RoundedCornerShape(24.dp),
     alpha: Float = 0.2f,
     borderWidth: Dp = 1.dp
 ): Modifier = this
 
 private val DarkColorScheme = darkColorScheme(
-    primary = GoogleBlueDark,
-    onPrimary = Color.Black,
-    primaryContainer = Color(0xFF1E3A5F),
-    onPrimaryContainer = GoogleBlueDark,
-    secondary = Color(0xFF9AA0A6),
+    primary = BrandBlueDark,
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFF1B2F4D),
+    onPrimaryContainer = BrandBlueDark,
+    secondary = Color(0xFF8E8E93),
+    secondaryContainer = Color(0xFF2C2C2E),
     background = DarkBg,
     surface = DarkSurface,
     surfaceVariant = DarkSurfaceVariant,
-    onSurface = Color(0xFFE8EAED),
-    onSurfaceVariant = Color(0xFF9AA0A6),
-    error = GoogleRed
+    onSurface = Color(0xFFF2F2F7),
+    onSurfaceVariant = Color(0xFFAEAEB2),
+    error = AccentRed,
+    onError = Color.White
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = GoogleBlue,
+    primary = BrandBlue,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFD2E3FC),
-    onPrimaryContainer = GoogleBlue,
-    secondary = Color(0xFF5F6368),
+    primaryContainer = Color(0xFFE5F0FF),
+    onPrimaryContainer = BrandBlue,
+    secondary = Color(0xFF8E8E93),
+    secondaryContainer = Color(0xFFE5E5EA),
     background = LightBg,
-    surface = LightBg,
+    surface = LightSurface,
     surfaceVariant = LightSurfaceVariant,
-    onSurface = Color(0xFF202124),
-    onSurfaceVariant = Color(0xFF5F6368),
-    error = GoogleRed
+    onSurface = Color(0xFF1C1C1E),
+    onSurfaceVariant = Color(0xFF3A3A3C),
+    error = AccentRed,
+    onError = Color.White
 )
 
 enum class GlassMode { None }

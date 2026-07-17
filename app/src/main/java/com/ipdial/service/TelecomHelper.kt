@@ -45,7 +45,11 @@ object TelecomHelper {
             .addSupportedUriScheme("ipdial")
             .setExtras(extras)
             
-        telecomManager.registerPhoneAccount(phoneAccountBuilder.build())
+        try {
+            telecomManager.registerPhoneAccount(phoneAccountBuilder.build())
+        } catch (e: Exception) {
+            android.util.Log.e("TelecomHelper", "Error registering phone account", e)
+        }
     }
 
     fun reportIncomingCall(context: Context, number: String, name: String) {

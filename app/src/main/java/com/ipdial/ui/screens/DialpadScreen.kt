@@ -2,15 +2,18 @@
 package com.ipdial.ui.screens
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.*
@@ -20,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
@@ -99,7 +103,7 @@ fun DialpadScreen(
                                 text = "Most Called",
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
+                                modifier = Modifier.padding(start = 24.dp, top = 16.dp, bottom = 8.dp)
                             )
                         }
                         itemsIndexed(mostCalled, key = { _, it -> it.id }) { _, contact ->
@@ -124,7 +128,7 @@ fun DialpadScreen(
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(
                             "No matching contacts",
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.outline
                         )
                     }
@@ -135,7 +139,7 @@ fun DialpadScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
+                    .padding(horizontal = 24.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -180,19 +184,23 @@ fun DialpadScreen(
                         value = dialTextFieldValue,
                         onValueChange = { vm.setDialString(it) },
                         textStyle = MaterialTheme.typography.displayMedium.copy(
-                            fontSize = if (dialString.length > 10) 32.sp else 44.sp,
-                            fontWeight = FontWeight.Normal,
+                            fontSize = if (dialString.length > 10) 36.sp else 46.sp,
+                            fontWeight = FontWeight.Light,
                             color = MaterialTheme.colorScheme.onBackground,
                             textAlign = TextAlign.Center
                         ),
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f).padding(vertical = 12.dp),
                         maxLines = 1,
                         singleLine = true,
                         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
                     )
                 }
 
-                AnimatedVisibility(visible = dialString.isNotEmpty()) {
+                AnimatedVisibility(
+                    visible = dialString.isNotEmpty(),
+                    enter = scaleIn() + fadeIn(),
+                    exit = scaleOut() + fadeOut()
+                ) {
                     Box(
                         modifier = Modifier
                             .size(48.dp)
@@ -216,9 +224,9 @@ fun DialpadScreen(
                 if (dialString.isEmpty()) Spacer(Modifier.size(48.dp))
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(8.dp))
 
-            // Modern Material 3 Keypad Grid
+            // Modern Premium Keypad Grid
             val keys = listOf(
                 Triple("1", "⠀", null),
                 Triple("2", "ABC", null),
@@ -237,13 +245,13 @@ fun DialpadScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 40.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                    .padding(horizontal = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 keys.chunked(3).forEach { row ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         row.forEach { (digit, sub, _) ->
                             DialKey(
@@ -267,7 +275,7 @@ fun DialpadScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // Clean Material FAB for Calling
+            // Clean Premium FAB for Calling
             FloatingActionButton(
                 onClick = { 
                     if (dialString.isEmpty() && !lastDialedNumber.isNullOrEmpty()) {
@@ -276,19 +284,20 @@ fun DialpadScreen(
                         vm.makeCall()
                     }
                 },
-                containerColor = MaterialTheme.colorScheme.primary, // GitHub Green for call
+                containerColor = com.ipdial.ui.theme.AccentGreen, 
+                contentColor = Color.White,
                 shape = CircleShape,
-                modifier = Modifier.size(72.dp)
+                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp, pressedElevation = 12.dp),
+                modifier = Modifier.size(76.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Call,
                     contentDescription = "Call",
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(36.dp)
                 )
             }
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(32.dp))
         }
     }
 
@@ -323,22 +332,21 @@ fun SuggestedContactRow(contact: Contact, onNumberClick: (String) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.Top
+            .padding(horizontal = 24.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .padding(top = 4.dp)
-                .size(40.dp)
+                .size(48.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant),
+                .background(MaterialTheme.colorScheme.secondaryContainer),
             contentAlignment = Alignment.Center
         ) {
             if (contact.photoUri != null) {
                 val request = remember(contact.photoUri) {
                     coil.request.ImageRequest.Builder(context)
                         .data(contact.photoUri)
-                        .size(80, 80)
+                        .size(96, 96)
                         .crossfade(true)
                         .diskCachePolicy(coil.request.CachePolicy.ENABLED)
                         .memoryCachePolicy(coil.request.CachePolicy.ENABLED)
@@ -353,40 +361,37 @@ fun SuggestedContactRow(contact: Contact, onNumberClick: (String) -> Unit) {
             } else {
                 Text(
                     text = contact.name.firstOrNull()?.uppercase() ?: "?",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
             }
         }
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = contact.name,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onBackground,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             contact.numbers.forEach { number ->
-                Box(
+                Text(
+                    text = number,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickableWithRipple { onNumberClick(number) }
+                        .clickable { onNumberClick(number) }
                         .padding(vertical = 4.dp)
-                ) {
-                    Text(
-                        text = number,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                )
             }
         }
     }
 }
 
-// Fixed size, perfectly circular buttons following Material guidelines
+// Fixed size, perfectly circular buttons following Premium iOS/Pixel guidelines
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DialKey(
@@ -395,16 +400,24 @@ fun DialKey(
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null
 ) {
-    Surface(
-        shape = CircleShape,
-        color = MaterialTheme.colorScheme.surfaceVariant, // Gentle background color
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(if (isPressed) 0.9f else 1.0f)
+    val bgColor = if (isPressed) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent
+
+    Box(
         modifier = Modifier
-            .size(76.dp)
+            .size(80.dp)
+            .scale(scale)
             .clip(CircleShape)
+            .background(bgColor)
             .combinedClickable(
+                interactionSource = interactionSource,
+                indication = null, // Disable default ripple for a custom scale effect
                 onClick = onClick,
                 onLongClick = onLongClick
-            )
+            ),
+        contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -412,18 +425,19 @@ fun DialKey(
         ) {
             Text(
                 text = digit,
-                style = MaterialTheme.typography.headlineLarge.copy(
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 32.sp
+                style = MaterialTheme.typography.displayMedium.copy(
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 36.sp
                 ),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.onBackground,
             )
             if (subLabel.isNotBlank()) {
                 Text(
                     text = subLabel,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                    fontSize = 11.sp
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    letterSpacing = 2.sp,
+                    fontSize = 10.sp
                 )
             }
         }
