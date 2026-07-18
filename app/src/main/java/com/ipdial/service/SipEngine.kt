@@ -706,6 +706,7 @@ object SipEngine {
 
     class PjCall(acct: Account, callId: Int = -1) : Call(acct, callId) {
         override fun onCallState(prm: OnCallStateParam) {
+            registerCurrentThread()
             try {
                 val currentCallId = try { getId() } catch (e: Throwable) {
                     log("Failed to get call ID in onCallState: ${e.message}", true)
@@ -758,16 +759,6 @@ object SipEngine {
                             log("Failed to disconnect telecom connection: ${e.message}", true)
                         }
                     }
-
-                    val callToDelete = this
-                    kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.IO) {
-                        try {
-                            registerCurrentThread()
-                            callToDelete.delete()
-                        } catch (e: Throwable) {
-                            Log.e("SipEngine", "Failed to delete call", e)
-                        }
-                    }
                 } else {
                     _callSession.value = _callSession.value?.copy(state = newState, callId = currentCallId)
 
@@ -775,8 +766,8 @@ object SipEngine {
                         try {
                             when (newState) {
                                 CallState.CONFIRMED -> conn.setActive()
-                                CallState.EARLY -> if (_callSession.value?.direction == CallDirection.OUTGOING) {
-                                    conn.setRingbackRequested(true)
+                                CallState.EARLY -> {
+                                    // For outgoing, we play local ringback. For incoming, we already called setRinging in answer flow.
                                 }
                                 CallState.CONNECTING -> conn.setDialing()
                                 else -> {}
@@ -792,6 +783,7 @@ object SipEngine {
         }
 
         override fun onCallMediaState(prm: OnCallMediaStateParam) {
+            registerCurrentThread()
             try {
                 val ci = try { info } catch (e: Throwable) {
                     log("Failed to get call info in onCallMediaState: ${e.message}", true)
@@ -812,21 +804,24 @@ object SipEngine {
                         val mi = ci.media.get(i)
                         if (mi.type == pjmedia_type.PJMEDIA_TYPE_AUDIO &&
                             mi.status == pjsua_call_media_status.PJSUA_CALL_MEDIA_ACTIVE) {
-                            val aud = AudioMedia.typecastFromMedia(getMedia(mi.index.toLong()))
+                            val media = getMedia(mi.index.toLong())
+                            if (media != null) {
+                                val aud = AudioMedia.typecastFromMedia(media)
 
-                            val currentSession = _callSession.value
-                            val txLevel = if (currentSession?.isMuted == true) 0f else VOLUME_BOOST_FACTOR
-                            val rxLevel = currentSession?.rxVolume ?: VOLUME_BOOST_FACTOR
-                            
-                            aud.adjustRxLevel(rxLevel)
-                            aud.adjustTxLevel(txLevel)
+                                val currentSession = _callSession.value
+                                val txLevel = if (currentSession?.isMuted == true) 0f else VOLUME_BOOST_FACTOR
+                                val rxLevel = currentSession?.rxVolume ?: VOLUME_BOOST_FACTOR
+                                
+                                aud.adjustRxLevel(rxLevel)
+                                aud.adjustTxLevel(txLevel)
 
-                            aud.startTransmit(endpoint?.audDevManager()?.playbackDevMedia)
-                            endpoint?.audDevManager()?.captureDevMedia?.startTransmit(aud)
+                                aud.startTransmit(endpoint?.audDevManager()?.playbackDevMedia)
+                                endpoint?.audDevManager()?.captureDevMedia?.startTransmit(aud)
 
-                            recorder?.let {
-                                aud.startTransmit(it)
-                                endpoint?.audDevManager()?.captureDevMedia?.startTransmit(it)
+                                recorder?.let {
+                                    aud.startTransmit(it)
+                                    endpoint?.audDevManager()?.captureDevMedia?.startTransmit(it)
+                                }
                             }
                         }
                     } catch (e: Throwable) {

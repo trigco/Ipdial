@@ -601,29 +601,16 @@ class SipService : Service() {
                         this,
                         NOTIF_ID_SERVICE,
                         notification,
-                        ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
                     )
                 } else {
-                    startForeground(NOTIF_ID_SERVICE, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL)
+                    startForeground(NOTIF_ID_SERVICE, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
                 }
             } catch (e: Throwable) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                    try {
-                        androidx.core.app.ServiceCompat.startForeground(
-                            this,
-                            NOTIF_ID_SERVICE,
-                            notification,
-                            ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
-                        )
-                    } catch (ex: Throwable) {
-                        try {
-                            startForeground(NOTIF_ID_SERVICE, notification)
-                        } catch (lastEx: Throwable) {}
-                    }
-                } else {
-                    try {
-                        startForeground(NOTIF_ID_SERVICE, notification)
-                    } catch (lastEx: Throwable) {}
+                try {
+                    startForeground(NOTIF_ID_SERVICE, notification)
+                } catch (ex: Throwable) {
+                    android.util.Log.e("SipService", "Failed to start foreground", ex)
                 }
             }
         } else {
