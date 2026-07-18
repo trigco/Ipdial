@@ -122,10 +122,14 @@ fun ContactsScreen(
                             contact = contact,
                             onNumberClick = { num -> vm.makeCall(num) },
                             onContactClick = {
-                                val intent = Intent(Intent.ACTION_VIEW).apply {
-                                    data = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, contact.id)
+                                try {
+                                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                                        data = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, contact.id)
+                                    }
+                                    context.startActivity(intent)
+                                } catch (e: Exception) {
+                                    android.util.Log.e("ContactsScreen", "Cannot open contact", e)
                                 }
-                                context.startActivity(intent)
                             }
                         )
                     }

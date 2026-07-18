@@ -45,14 +45,10 @@ fun cleanDisplayName(name: String, uri: String): String {
 fun Modifier.clickableWithRipple(
     enabled: Boolean = true,
     onClick: () -> Unit
-): Modifier = composed {
-    this.clickable(
-        enabled = enabled,
-        interactionSource = remember { MutableInteractionSource() },
-        indication = ripple(),
-        onClick = onClick
-    )
-}
+): Modifier = this.clickable(
+    enabled = enabled,
+    onClick = onClick
+)
 
 fun Modifier.clickableNoRipple(onClick: () -> Unit): Modifier = composed {
     this.clickable(

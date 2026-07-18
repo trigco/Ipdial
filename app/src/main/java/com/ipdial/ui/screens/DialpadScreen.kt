@@ -258,7 +258,7 @@ fun DialpadScreen(
                                 digit = digit,
                                 subLabel = sub,
                                 onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     vm.dialPad(digit[0])
                                 },
                                 onLongClick = if (digit == "0") {
