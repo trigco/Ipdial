@@ -556,12 +556,20 @@ class SipService : Service() {
                         }
                         CallState.EARLY -> {
                             if (session.direction == CallDirection.OUTGOING && stateChanged) {
-                                try {
-                                    val tg = ToneGenerator(AudioManager.STREAM_VOICE_CALL, 100)
-                                    tg.startTone(ToneGenerator.TONE_SUP_RINGTONE)
-                                    delay(2000)
-                                    tg.release()
-                                } catch (e: Throwable) {}
+                                scope.launch {
+                                    var tg: ToneGenerator? = null
+                                    try {
+                                        tg = ToneGenerator(AudioManager.STREAM_VOICE_CALL, 100)
+                                        tg.startTone(ToneGenerator.TONE_SUP_RINGTONE)
+                                        // Wait until state is no longer EARLY
+                                        while (SipEngine.callSession.value?.state == CallState.EARLY) {
+                                            delay(1000)
+                                        }
+                                    } catch (e: Throwable) {
+                                    } finally {
+                                        tg?.release()
+                                    }
+                                }
                             }
                             if (stateChanged || speakerChanged) routeAudioToDefault()
                             updateForegroundType(ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL)
@@ -762,19 +770,27 @@ class SipService : Service() {
         if (wakeLock?.isHeld == true) return
         val pm = getSystemService(POWER_SERVICE) as PowerManager
         
-        wakeLock = pm.newWakeLock(
-            PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK,
-            "IPDial:call"
-        ).apply { 
-            setReferenceCounted(false)
-            acquire(60 * 60 * 1000L) 
+        try {
+            wakeLock = pm.newWakeLock(
+                PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK,
+                "IPDial:call"
+            ).apply { 
+                setReferenceCounted(false)
+                acquire(60 * 60 * 1000L) 
+            }
+        } catch (e: Throwable) {
+            android.util.Log.e("SipService", "Failed to acquire proximity wake lock", e)
         }
 
-        if (cpuWakeLock == null) {
-            cpuWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "IPDial:cpu_call").apply {
-                setReferenceCounted(false)
-                acquire(60 * 60 * 1000L)
+        try {
+            if (cpuWakeLock == null) {
+                cpuWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "IPDial:cpu_call").apply {
+                    setReferenceCounted(false)
+                    acquire(60 * 60 * 1000L)
+                }
             }
+        } catch (e: Throwable) {
+            android.util.Log.e("SipService", "Failed to acquire CPU wake lock", e)
         }
     }
 
@@ -791,10 +807,12 @@ class SipService : Service() {
     }
 
     private fun releaseWakeLock() {
-        wakeLock?.let { if (it.isHeld) it.release() }
-        wakeLock = null
-        cpuWakeLock?.let { if (it.isHeld) it.release() }
-        cpuWakeLock = null
+        try {
+            wakeLock?.let { if (it.isHeld) it.release() }
+            wakeLock = null
+            cpuWakeLock?.let { if (it.isHeld) it.release() }
+            cpuWakeLock = null
+        } catch (e: Throwable) {}
     }
 
     private fun createNotificationChannels() {

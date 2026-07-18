@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.launch
 import org.pjsip.pjsua2.*
 
 /**
@@ -759,11 +760,12 @@ object SipEngine {
                     }
 
                     val callToDelete = this
-                    android.os.Handler(android.os.Looper.getMainLooper()).post {
+                    kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.IO) {
                         try {
+                            registerCurrentThread()
                             callToDelete.delete()
                         } catch (e: Throwable) {
-                            Log.e("SipEngine", "Failed to delete call on main loop", e)
+                            Log.e("SipEngine", "Failed to delete call", e)
                         }
                     }
                 } else {
@@ -774,7 +776,7 @@ object SipEngine {
                             when (newState) {
                                 CallState.CONFIRMED -> conn.setActive()
                                 CallState.EARLY -> if (_callSession.value?.direction == CallDirection.OUTGOING) {
-                                    conn.setRinging()
+                                    conn.setRingbackRequested(true)
                                 }
                                 CallState.CONNECTING -> conn.setDialing()
                                 else -> {}
